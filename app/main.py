@@ -2,6 +2,7 @@ from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 import json
+import os
 
 app = FastAPI()
 
@@ -14,11 +15,17 @@ app.add_middleware(
     allow_headers=["*"],  # Allows all headers
 )
 
-# Load student marks from q-vercel-python.json
-with open("q-vercel-python.json") as f:
-    students_data = json.load(f)
-    # Convert list to dictionary for faster lookups
-    student_marks = {student["name"]: student["marks"] for student in students_data}
+# Load student marks from q-vercel-python.json using absolute path
+current_dir = os.path.dirname(os.path.realpath(__file__))
+json_path = os.path.join(current_dir, "q-vercel-python.json")
+
+try:
+    with open(json_path) as f:
+        students_data = json.load(f)
+        student_marks = {student["name"]: student["marks"] for student in students_data}
+except Exception as e:
+    print(f"Error loading JSON file: {e}")
+    student_marks = {}
 
 @app.get("/")
 async def root():
